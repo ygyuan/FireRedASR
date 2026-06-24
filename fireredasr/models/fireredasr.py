@@ -2,6 +2,7 @@ import os
 import time
 
 import torch
+from argparse import Namespace
 
 from fireredasr.data.asr_feat import ASRFeatExtractor
 from fireredasr.models.fireredasr_aed import FireRedAsrAed
@@ -107,7 +108,9 @@ class FireRedAsr:
 
 
 def load_fireredasr_aed_model(model_path):
-    package = torch.load(model_path, map_location=lambda storage, loc: storage)
+    # package = torch.load(model_path, map_location=lambda storage, loc: storage)
+    with torch.serialization.safe_globals([Namespace]):
+        package = torch.load(model_path, weights_only=True, map_location=lambda storage, loc: storage)
     print("model args:", package["args"])
     model = FireRedAsrAed.from_args(package["args"])
     model.load_state_dict(package["model_state_dict"], strict=True)
